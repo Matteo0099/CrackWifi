@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>
 #include <iostream>
  
-  const char* ap     = "ssid";   //Your WiFi's access point name
-  const char* pass = "password"; //Your WiFi's password
+  const char* ap = "ssid";   //your wifi access point name
+  const char* pass = "password"; //your wifi password
   int wifiStatus;
   int connectStatus = 0;
     
