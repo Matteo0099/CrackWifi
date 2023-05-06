@@ -1,9 +1,11 @@
+#include <WiFi.h>
+
 // WiFi credential constants 
-const char* wifiSSID = "ssid";  
-const char* wifiPassword = "password";
+const char* wifiSSID = "ssid";  // name
+const char* wifiPassword = "password"; // password
 
 // Pin constants
-const int ledPin = LED_BUILTIN;
+const int ledPin = 13;
 const int wifiPin = 2;
 
 // Pin state constants
@@ -11,9 +13,6 @@ const int ledOn = HIGH;
 const int ledOff = LOW;
 const int wifiConnected = HIGH; 
 const int wifiDisconnected = LOW;
-
-// WiFi connection status variable 
-int wifiConnectionStatus = 0;
 
 void setup() {
   // Set pin modes
@@ -26,12 +25,12 @@ void setup() {
 
 void loop() {
   // Check WiFi connection status
-  if(wifiConnectionStatus == 0) {
+  if(WiFi.status() != WL_CONNECTED) {
     digitalWrite(ledPin, ledOn);
     digitalWrite(wifiPin, wifiDisconnected); 
   } 
   
-  else if(wifiConnectionStatus != 0) {
+  else {
     digitalWrite(ledPin, ledOff);
     digitalWrite(wifiPin, wifiConnected);
   }
@@ -46,10 +45,9 @@ void connectToWifi() {
   while (WiFi.status() != WL_CONNECTED) {
     digitalWrite(ledPin, ledOn);
     digitalWrite(wifiPin, wifiDisconnected);
-    delay(1000);
+    delay(150);
+    digitalWrite(ledPin, ledOff);
+    digitalWrite(wifiPin, wifiConnected);
+    delay(150);
   }
-  
-  digitalWrite(ledPin, ledOff);
-  digitalWrite(wifiPin, wifiConnected);
-  wifiConnectionStatus++;
 }
