@@ -1,53 +1,87 @@
 #include <WiFi.h>
+#include <SPI.h>
 
-// WiFi credential constants 
-const char* wifiSSID = "ssid";  // name
-const char* wifiPassword = "password"; // password
+// WiFi credential constants  
+const char* wifiSSID = "nameWifi";      //yr wifi   
+const char* wifiPassword = "password";  //yr psw
+
+// Alphabet and digits 
+const char* alphabet = "abcdefghijklmnopqrstuvwxyz";
+const char* capsLock = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char* digits = "0123456789";
 
 // Pin constants
-const int ledPin = 13;
-const int wifiPin = 2;
+const int wifiPin = 2;  
 
-// Pin state constants
-const int ledOn = HIGH;
-const int ledOff = LOW;
-const int wifiConnected = HIGH; 
-const int wifiDisconnected = LOW;
+// WiFi status
+int status = WL_IDLE_STATUS;  
 
 void setup() {
-  // Set pin modes
-  pinMode(ledPin, OUTPUT);
+  // Set pin mode
   pinMode(wifiPin, OUTPUT);
-  
   // Connect to WiFi
-  connectToWifi(); 
+  connectToWifi();  
 }
 
 void loop() {
   // Check WiFi connection status
-  if(WiFi.status() != WL_CONNECTED) {
-    digitalWrite(ledPin, ledOn);
-    digitalWrite(wifiPin, wifiDisconnected); 
-  } 
-  
+  if(WiFi.status() != WL_CONNECTED) 
+    digitalWrite(wifiPin, LOW); 
   else {
-    digitalWrite(ledPin, ledOff);
-    digitalWrite(wifiPin, wifiConnected);
+    digitalWrite(wifiPin, HIGH);
+    // Search for password
+    if(WiFi.status() == WL_CONNECTED) 
+      search();
   }
-  
   delay(1000);  
 }
 
-// Connect to WiFi function 
-void connectToWifi() {
-  WiFi.begin(wifiSSID, wifiPassword);
+// Connect to WiFi function  
+void connectToWifi(const char* psw) {
+  WiFi.disconnect();
+  WiFi.begin(wifiSSID, psw);
   
   while (WiFi.status() != WL_CONNECTED) {
-    digitalWrite(ledPin, ledOn);
-    digitalWrite(wifiPin, wifiDisconnected);
+    digitalWrite(wifiPin, LOW);
     delay(150);
-    digitalWrite(ledPin, ledOff);
-    digitalWrite(wifiPin, wifiConnected);
+    digitalWrite(wifiPin, HIGH);
     delay(150);
+  }
+}
+
+void search() {
+  char key[100] = ""; 
+  int i = 0;
+  
+  for (;;) {
+    while (strcmp(key, wifiPassword) != 0) {
+      key[i] = alphabet[i];
+      if (key[i] == wifiPassword[i]) 
+        key[i] += alphabet[i];
+      else if (key[i] == digits[i] && key[i] == wifiPassword[i]) 
+        key[i] += digits[i];  
+      else if (key[i] == capsLock[i]) 
+        key[i] += capsLock[i];
+      else {
+        alphabet[i]++;
+        digits[i]++;
+      }  
+      if(key[i] == wifiPassword[i] 
+        || key[i] == capsLock[i] 
+        || key[i] == digits[i] && key[i] == wifiPassword[i]) {
+        i++;
+      }
+      if (strcmp(key, wifiPassword) == 0) 
+        return;
+        // break;
+    }
+    
+    if (strcmp(key, wifiPassword) == 0) { 
+      WiFi.disconnect();  
+      if(WiFi.status() == WL_CONNECTED) 
+        status = WiFi.begin(wifiSSID, key);
+      else 
+        connectToWifi(key);  
+    }
   }
 }
